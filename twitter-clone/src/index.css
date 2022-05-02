@@ -1,0 +1,28 @@
+*,
+body,
+:root,
+body::after,
+body::before {
+  font-family: "Open sans";
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+:root {
+  --primaryColor: #03b7ff;
+  --textFont-md: 15px;
+  --textFont-sm: 13px;
+  --textFont-xsm: 12px;
+  --textFont-ssm: 10px;
+  --textFont-lg: 18px;
+  --textFont-xlg: 20px;
+  --textFont-xxlg: 40px;
+  --borderLight: rgba(0, 0, 0, 0.1);
+}
+body::-webkit-scrollbar {
+  display: none;
+}
+a{
+  text-decoration: none;
+  color:inherit;
+}
