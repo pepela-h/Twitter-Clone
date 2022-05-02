@@ -1,6 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+import { useDispatch } from "react-redux";
+import { createPost } from "../../../actions/posts";
 const Tweet = () => {
+  const dispatch = useDispatch();
+  const [formData, setFormData] = useState({ tweet: "", image: "",video:"" });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (formData.tweet || formData.image) {
+      dispatch(createPost(232323, formData));
+    }
+  };
+
+  const handleChange = (e) => {
+    if (e.target.name === "image" || e.target.name === "video") {
+      let files = e.target.files;
+      let reader = new FileReader();
+      reader.readAsDataURL(files[0]);
+      reader.onload = (e) => {
+        setFormData({
+          ...formData,
+          [e.target.name]: e.target.result,
+        });
+      };
+    } else {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.value,
+      });
+    }
+  };
   return (
     <Wrap>
       <div>
@@ -12,20 +43,44 @@ const Tweet = () => {
       <div className="right">
         <form
           onSubmit={(e) => {
-            e.preventDefault();
+            handleSubmit(e);
           }}
         >
-          <input placeholder="What's happening?" type="text" />
+          <input
+            placeholder="What's happening?"
+            type="text"
+            name="tweet"
+            value={formData.tweet}
+            onChange={(e) => {
+              handleChange(e);
+            }}
+          />
           <div className="bottom">
             <label htmlFor="photo">
               <i className="fal fa-images"></i>
             </label>
-            <input type="file" id="photo" />
+            <input
+              type="file"
+              id="photo"
+              name="image"
+              value={formData.image}
+              onChange={(e) => {
+                handleChange(e);
+              }}
+            />
 
             <label htmlFor="video">
               <i className="fal fa-video"></i>
             </label>
-            <input type="file" id="video" />
+            <input
+              type="file"
+              id="video"
+              name="video"
+              value={formData.video}
+              onChange={(e) => {
+                handleChange(e);
+              }}
+            />
             <i className="fal fa-grin"></i>
             <button>Tweet</button>
           </div>
@@ -44,7 +99,7 @@ const Wrap = styled.div`
   display: flex;
   align-items: center;
   padding: 0 15px;
-   .avatar {
+  .avatar {
     background: var(--borderLight);
     flex: 0.08;
     height: 50px !important;

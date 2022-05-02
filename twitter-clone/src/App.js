@@ -6,12 +6,10 @@ import Notifications from "./routes/Notifications";
 import Profile from "./routes/Profile";
 import Chat from "./routes/Chat";
 import NotFound from "./routes/NotFound";
-import { useSelector } from "react-redux";
 import { ThemeProvider } from "@mui/material/styles";
 import { theme } from "./theme/theme";
 function App() {
-  const posts = useSelector((state) => state.posts);
-  console.log(posts);
+
   return (
     <>
       <ThemeProvider theme={theme}>

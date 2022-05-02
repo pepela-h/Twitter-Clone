@@ -1,10 +1,11 @@
 import axios from "axios";
 
-const API = axios.create("http://127.0.0.1:3500");
+const API = axios.create({baseURL: 'http://127.0.0.1:3500'})
 
 export const fetchPosts = async (params) => {
   try {
-    const { data } = await API.get(`/posts/?${params}`);
+    const { data } = await API.get(`/posts?${params}`);
+    console.log("posts");
 
     return data;
   } catch (error) {

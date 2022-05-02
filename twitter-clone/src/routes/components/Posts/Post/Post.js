@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 // import bgImage from "../../../../images/1.jpg";
 const Post = ({ image, description }) => {
-  console.log(image);
+
   return (
     <Wrap>
       <Left>

@@ -2,7 +2,7 @@ import * as constants from "../constants/constants";
 import * as api from "../api";
 
 export const fetchPosts =
-  (params = null) =>
+  (params=null ) =>
   async (dispatch) => {
     const data = await api.fetchPosts(params);
     dispatch({
