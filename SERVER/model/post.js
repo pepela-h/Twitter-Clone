@@ -2,15 +2,21 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const postSchema = new Schema(
   {
-    creatorName: {
+    creator: {
+      type: String,
+    },
+    username: {
       type: String,
       required: true,
     },
-    creatorId: {
-      type: mongoose.Types.ObjectId,
+    retweetUsername: { type: String },
+    owner: {
       required: true,
+      type: String,
+      index: true,
     },
-    description: {
+
+    tweet: {
       type: String,
     },
     image: {
@@ -21,12 +27,21 @@ const postSchema = new Schema(
       type: [mongoose.Types.ObjectId],
       default: [],
     },
+    tags: {
+      type: [String],
+      default: [],
+    },
+    reTweetComment: String,
+    isRetweet: {
+      type: Boolean,
+      default: false,
+    },
     likes: {
       type: [mongoose.Types.ObjectId],
       default: [],
     },
     comments: {
-      type: [String],
+      type: [mongoose.Types.ObjectId],
       default: [],
     },
     shares: {

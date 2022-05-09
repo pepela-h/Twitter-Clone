@@ -6,18 +6,19 @@ import InnerGrid from "./components/Layouts/InnerGrid";
 import Feed from "./components/Feed/Feed";
 import { Grid } from "@mui/material";
 
+
 const Home = () => {
   return (
     <OuterGrid>
-      <Grid item sm={2.4} position="static">
+      <Grid item sm={3} position="static">
         <LeftBar />
       </Grid>
-      <Grid item sm={9.6}>
+      <Grid item sm={9}>
         <InnerGrid>
-          <Grid item sm={7.5}>
+          <Grid item sm={7}>
             <Feed></Feed>
           </Grid>
-          <Grid item sm={4.5} position="static">
+          <Grid item sm={5} position="static">
             <RightBar />
             <div></div>
           </Grid>

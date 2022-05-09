@@ -21,10 +21,10 @@ const dbConn = (url) => {
 
 dbConn(DB_URI);
 
-app.use(express.json({ extended: true, limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsConfig));
 app.use(cookieParser());
+app.use(express.json({ extended: true, limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   console.log(req.url,);
@@ -35,7 +35,9 @@ app.get("/", (req, res) => {
   res.send("This is homepage");
 });
 
-app.use("/posts",require("./routes/posts"))
+app.use("/posts", require("./routes/posts"))
+app.use("/users", require("./routes/users"))
+app.use("/refresh", require("./routes/refresh"))
 
 mongoose.connection.once("connected", () => {
   console.log("Connected to MongoDB");

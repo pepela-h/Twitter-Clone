@@ -9,20 +9,35 @@ body::before {
   box-sizing: border-box;
 }
 :root {
-  --primaryColor: #03b7ff;
+  --primaryColor: #03abff;
   --textFont-md: 15px;
   --textFont-sm: 13px;
   --textFont-xsm: 12px;
   --textFont-ssm: 10px;
+  --textFont-xssm: 8px;
   --textFont-lg: 18px;
   --textFont-xlg: 20px;
   --textFont-xxlg: 40px;
   --borderLight: rgba(0, 0, 0, 0.1);
+  --borderLLight: rgba(0, 0, 0, 0.03);
 }
 body::-webkit-scrollbar {
   display: none;
 }
-a{
+a {
   text-decoration: none;
-  color:inherit;
+  color: inherit;
+}
+.alert {
+  color: red;
+}
+::-webkit-datetime-edit {
+  padding: 5px;
+}
+.photogrid {
+  
+  grid-template-areas: "
+  1 2
+  3 4
+  ";
 }

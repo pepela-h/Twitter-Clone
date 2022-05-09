@@ -1,7 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 const Leftbar = () => {
+  const [selected, setSelected] = useState(0);
+  const tabs = [
+    {
+      icon: "fal fa-home-alt",
+      text: "Home",
+    },
+    {
+      icon: "fal fa-search",
+      text: "Explore",
+    },
+    {
+      icon: "fal fa-inbox",
+      text: "Messages",
+    },
+    {
+      icon: "fal fa-bookmark",
+      text: "Saved",
+    },
+    {
+      icon: "fal fa-list-alt",
+      text: "Lists",
+    },
+    {
+      icon: "fal fa-user-alt",
+      text: "Profile",
+    },
+    {
+      icon: "fal fa-ellipsis-h",
+      text: "More Options",
+    },
+  ];
+
+  const handleTabs = (i) => {
+    setSelected(i);
+  };
+
+  const user = useSelector((state) => state.user);
+
+  useEffect(() => {}, []);
   return (
     <Wrap className={"Leftbars"}>
       <div className="head">
@@ -9,36 +49,44 @@ const Leftbar = () => {
           <i className="fab fa-twitter"></i>
         </Link>
       </div>
-      <Row>
-        <i className="icon fal fa-home-alt"></i>
-        <h5>Home</h5>
-      </Row>
-      <Row>
-        <i className="icon fal fa-search"></i>
-        <h5>Explore</h5>
-      </Row>
+      {tabs.map((tab, i) => {
+        const color = selected === i ? "var(--primaryColor)" : "inherit";
+        return (
+          <Row key={i} color={color} onClick={() => handleTabs(i)}>
+            <i className={`icon fal ${tab.icon}`}></i>
+            <h5>{tab.text}</h5>
+          </Row>
+        );
+      })}
 
-      <Row>
-        <i className="icon fal fa-inbox"></i>
-        <h5>Messages</h5>
-      </Row>
-      <Row>
-        <i className="icon fal fa-bookmark"></i>
-        <h5>Saved</h5>
-      </Row>
-      <Row>
-        <i className="icon fal fa-list-alt"></i>
-        <h5>Lists</h5>
-      </Row>
-      <Row>
-        <i className="icon fal fa-user-alt"></i>
-        <h5>Profile</h5>
-      </Row>
-      <Row>
-        <i className="icon fal fa-ellipsis-h"></i>
-        <h5>More</h5>
-      </Row>
       <button>Tweet</button>
+
+      {user?.username ? (
+        <div className="bottom">
+          <div className="avatar">
+            {user.avatar ? (
+              <img src={user.avatar} alt="" />
+            ) : (
+              <i className="fa fa-user"></i>
+            )}
+          </div>
+          <div>
+            <h5>{user.name}</h5>
+            <p>@{user.username}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="bottom">
+          <div className="avatar">
+            <i className="fa fa-user"></i>
+          </div>
+          <Link to="/auth">
+            <h6>
+              Login <i className="fa fa-sign-in"></i>
+            </h6>
+          </Link>
+        </div>
+      )}
     </Wrap>
   );
 };
@@ -57,6 +105,42 @@ const Wrap = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  .bottom {
+    margin-top: auto;
+    margin-bottom: 15px;
+    width: 80%;
+    display: flex;
+    align-items: center;
+    a {
+      color: var(--primaryColor);
+    }
+    p {
+      font-size: var(--textFont-ssm);
+      font-weight: bold;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .avatar {
+      img {
+        width: 100%;
+      }
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--borderLight);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-right: 15px;
+      i {
+        color: grey;
+        font-size: 35px;
+        transform: translateY(10%);
+      }
+    }
+  }
   .head {
     display: flex;
     align-items: center;
@@ -84,23 +168,24 @@ const Wrap = styled.div`
 const Row = styled.div`
   display: flex;
   align-items: center;
-  font-size: 22px;
+  font-size: 20px;
   justify-content: flex-end;
   cursor: pointer;
   padding: 15px 0;
   width: 150px;
-
-  /* margin-left: auto; */
-
+  flex-shrink: 0;
+  color: ${(props) => props.color}; /* margin-left: auto; */
   h5 {
-    width: 100px;
+    min-width: 120px;
     margin-right: 20px;
     display: flex;
     align-items: center;
   }
   .fa-ellipsis-h {
     border-radius: 50%;
-    border: 1px solid black;
+    border: 1px solid;
+    border-color: ${(props) => props.color};
+    flex-shrink: 0;
   }
   .icon {
     width: 25px;

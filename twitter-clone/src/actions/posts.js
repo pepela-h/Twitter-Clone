@@ -2,12 +2,28 @@ import * as constants from "../constants/constants";
 import * as api from "../api";
 
 export const fetchPosts =
-  (params=null ) =>
+  (setLoadng, params = null) =>
   async (dispatch) => {
+    setLoadng(true);
     const data = await api.fetchPosts(params);
+    setLoadng(false);
     dispatch({
       type: constants.FETCHPOSTS,
       payload: data,
+    });
+  };
+
+export const fetchMorePosts =
+  (setHasMore, setLoadng, page = 0, limit = 3) =>
+  async (dispatch) => {
+    const params = `page=${page}&limit=${limit}`;
+    setLoadng(true);
+    const data = await api.fetchMorePosts(params);
+    setHasMore(data.hasMore);
+    setLoadng(false);
+    dispatch({
+      type: constants.FETCHMOREPOSTS,
+      payload: data.posts,
     });
   };
 export const likePost = (userId, postId) => async (dispatch) => {
@@ -24,6 +40,17 @@ export const comentPost = (userId, postId, comment) => async (dispatch) => {
     payload: data,
   });
 };
+
+export const retweetPost =
+  (postId, userId, comment = null) =>
+  async (dispatch) => {
+    const data = await api.retweetPost(postId, userId, comment);
+    dispatch({
+      type: constants.RETWEETPOST,
+      payload: data,
+    });
+  };
+
 export const deletePost = (userId, postId) => async (dispatch) => {
   const data = await api.deletePost(userId, postId);
   dispatch({
