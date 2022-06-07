@@ -1,48 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router";
+// import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { makeStyles } from "@mui/styles";
+import { getTags } from "../../../api";
 // import { borderColor } from "@mui/system";
-const useStyles = makeStyles((theme) => ({
-  rightBar: {
-    background: theme.palette.primary.main[100],
-    color: "#000000",
-
-    height: "100%",
-  },
-  follow: {
-    background: "transparent",
-    color: theme.palette.primary.main,
-    borderRadius: 50,
-    border: "2px solid",
-    borderColor: theme.palette.primary.main,
-    // padding: "2px 5px",
-    minWidth: 80,
-    height: 30,
-    marginLeft: "auto",
-    cursor: "pointer",
-  },
-  avatar: {
-    height: 45,
-    width: 45,
-    borderRadius: "50%",
-    background: "var(--borderLLight)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-    marginRight: 10,
-  },
-  User: {
-    display: "flex",
-    alignItems: "center",
-    padding: "15px",
-    borderBottom: "1px solid rgba(0,0,0,0.2)",
-  },
-}));
+import { CircularProgress } from "@mui/material";
+import useStyles from "./styles";
 const RightBar = () => {
   const classes = useStyles();
-  const people = ["Pepela John", "Ivyn Mugau", "Tess Ukumbi", "Legacy Otieno"];
+  const location = useLocation();
+  // eslint-disable-next-line
   const [show, setShow] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+
+  const people = ["Pepela John"];
+  const [tags, setTags] = useState([]);
+  useEffect(() => {
+    const getTrends = async () => {
+      setLoading(true)
+      const data = await getTags(10, setLoading);
+      setTags(data);
+    };
+
+    if (location.pathname !== "/explore") {
+      getTrends();
+    }
+  }, [location.pathname]);
   return (
     <Wrap className={classes.rightBar}>
       <form>
@@ -50,70 +34,75 @@ const RightBar = () => {
         <i className="fa fa-search"></i>
       </form>
       <Contaier className="container">
-        <Row>
-          <h4>Maybe you may like</h4>
-          {people.map((person, index) => {
-            return !show ? (
-              index < 2 ? (
-                <div className={classes.User} key={index}>
-                  <div className={classes.avatar}>
-                    <i className="fa fa-user"></i>
-                  </div>
-                  <div className="user">
-                    <h5>{person}</h5>
-                    <h6>@pepela</h6>
-                  </div>
-                  <button className={classes.follow}>Follow</button>
-                </div>
-              ) : (
-                ""
-              )
+        {location.pathname === "/explore" ? (
+          <Row>
+            <h4>Maybe you may like</h4>
+            {loading ? (
+              <div className={classes.loadingState}>
+                <CircularProgress color="primary" />
+              </div>
             ) : (
-              <div className={classes.User} key={index}>
-                <div className={classes.avatar}>
-                  <i className="fa fa-user"></i>
-                </div>
-                <div className="user">
-                  <h5>{person}</h5>
-                  <h6>@pepela</h6>
-                </div>
-                <button className={classes.follow}>Follow</button>
-              </div>
-            );
-          })}
+              people.map((person, index) => {
+                return !show ? (
+                  index < 2 ? (
+                    <div className={classes.User} key={index}>
+                      <div className={classes.avatar}>
+                        <i className="fa fa-user"></i>
+                      </div>
+                      <div className="user">
+                        <h5>{person}</h5>
+                        <h6>@pepela</h6>
+                      </div>
+                      <button className={classes.follow}>Follow</button>
+                    </div>
+                  ) : (
+                    ""
+                  )
+                ) : (
+                  <div className={classes.User} key={index}>
+                    <div className={classes.avatar}>
+                      <i className="fa fa-user"></i>
+                    </div>
+                    <div className="user">
+                      <h5>{person}</h5>
+                      <h6>@pepela</h6>
+                    </div>
+                    <button className={classes.follow}>Follow</button>
+                  </div>
+                );
+              })
+            )}
 
-          <button onClick={() => setShow((state) => !state)}>Show more</button>
-        </Row>
-        
-        <Row>
-          <h4>Trends for You</h4>
-          {people.map((person, index) => {
-            return (
-              <div key={index}>
-                <Tag key={index + "vs"}>
-                  {/* <div className={classes.avatar}>
-                    <i className="fa fa-user"></i>
-                  </div> */}
-                  <div className="user">
-                    <h5>#{person}</h5>
-                    <h6>{600 * index + 3 } Tweets</h6>
-                  </div>
-                  {/* <button className={classes.follow}>Follow</button> */}
-                </Tag>
-                <Tag key={index}>
-                  {/* <div className={classes.avatar}>
-                    <i className="fa fa-user"></i>
-                  </div> */}
-                  <div className="user">
-                    <h5>#{person}</h5>
-                    <h6>600 Tweets</h6>
-                  </div>
-                  {/* <button className={classes.follow}>Follow</button> */}
-                </Tag>
+            {/* <button onClick={() => setShow((state) => !state)}>
+              Show more
+            </button> */}
+          </Row>
+        ) : (
+          <Row>
+            <h4>Trends for You</h4>
+            {loading ? (
+              <div className={classes.loadingState}>
+                <CircularProgress color="primary" />
               </div>
-            );
-          })}
-        </Row>
+            ) : (
+              tags?.length &&
+              tags?.map((tag, index) => {
+                return (
+                  <Tag key={index + "vs"}>
+                    <div className="user">
+                      <h5>{tag.name}</h5>
+                      <h6>{tag.posts.length} Tweets</h6>
+                    </div>
+                  </Tag>
+                );
+              })
+            )}
+            {/* <Link to="/explore">
+              {" "}
+              <button>Show More</button>
+            </Link> */}
+          </Row>
+        )}
       </Contaier>
     </Wrap>
   );
@@ -126,7 +115,7 @@ const Row = styled.div`
   background: var(--borderLLight);
   margin: 10px 0;
   border-radius: 15px;
-  > button {
+   button {
     border: none;
     color: var(--primaryColor);
     background-color: transparent;
@@ -134,9 +123,12 @@ const Row = styled.div`
     margin: 5px 0 5px 15px;
   }
   > h4 {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.0811);
     margin: 5px 0;
     padding: 10px;
+    &:last-child {
+      border-bottom: none;
+    }
   }
 `;
 
@@ -144,7 +136,7 @@ const Tag = styled.div`
   display: flex;
   align-items: center;
   padding: 15px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.081);
   &:last-child {
     border-bottom: none;
   }

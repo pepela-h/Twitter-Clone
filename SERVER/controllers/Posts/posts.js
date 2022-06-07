@@ -1,7 +1,8 @@
 const Post = require("../../model/post");
 const mongoose = require("mongoose");
 const Comment = require("../../model/coment");
-const HashTag = require("../../model/hashtag");
+
+const hashtag = require("../../model/hashtag");
 const fetchPosts = async (req, res, next) => {
   try {
     const posts = await Post.find({}).sort({ _id: -1 });
@@ -10,21 +11,48 @@ const fetchPosts = async (req, res, next) => {
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 };
-const fetchMorePosts = async (req, res, next) => {
-  const { page, limit } = req?.query;
-  console.log(limit, page);
-  if (!page) return res.sendStatus(404);
-  try {
-    const total = await Post.countDocuments();
-    const startIndex = (Number(page) - 1) * Number(limit);
-    const posts = await Post.find()
-      .sort({ _id: -1 })
-      .limit(Number(limit))
-      .skip(Number(startIndex));
-    // const posts = await Post.find({}).sort({ _id: -1 });
+const fetchMorePosts = async (req, res) => {
+  const { page, limit, user, search } = req?.query;
 
+  if (!page) return res.sendStatus(404);
+  if (Number(page) < 0) {
+    page = 0;
+  }
+
+  try {
+    const startIndex = (Number(page) - 1) * Number(limit);
+    let posts;
+    let total;
+    if (user !== "null") {
+      // console.log(user)
+      total = await Post.countDocuments({ creator: user });
+      posts = await Post.find({
+        $or: [{ username: user }, { retweetUsername: user }],
+      })
+        .sort({ _id: -1 })
+        .limit(Number(limit))
+        .skip(Number(startIndex));
+    } else if (search !== "") {
+      total = await Post.countDocuments({
+        tags: { $in: [search.replace("%23", "#")] },
+      });
+      posts = await Post.find({
+        tags: { $in: [search.replace("%23", "#")] },
+      })
+        .sort({ _id: -1 })
+        .limit(Number(limit))
+        .skip(Number(startIndex));
+    } else {
+      console.log("elseblock");
+      total = await Post.countDocuments();
+
+      posts = await Post.find()
+        .sort({ _id: -1 })
+        .limit(Number(limit))
+        .skip(Number(startIndex));
+      // const posts = await Post.find({}).sort({ _id: -1 });
+    }
     const hasMore = page <= Math.ceil(total / limit);
-    console.log(posts.length, hasMore);
 
     return res.status(200).json({ posts, hasMore });
   } catch (error) {
@@ -39,20 +67,77 @@ const createPost = async (req, res) => {
   if (!user || !name) return res.sendStatus(401);
   try {
     const { postData } = req.body;
-    console.log(user);
+    const tags = postData.tweet.split(" ").filter((row) => row.startsWith("#"));
 
     if (!user) return res.sendStatus(401);
-    if (tags.length) {
-      const createdTag = await HashTag.create(tags);
-      console.log(createdTag);
+    console.log(postData);
+    if (postData.isPoll) {
+      let exp = new Date();
+      let minutes =
+        (postData.poll.exp.minutes || 0) +
+        (postData.poll.exp.hours || 0) * 60 +
+        (postData.poll.exp.days || 0) * 24 * 60;
+
+      if (minutes <= 0) {
+        return res.sendStatus(400);
+      }
+      // console.log(exp);
+      // console.log(minutes);
+
+      // exp = exp.getMinutes() + minutes;
+
+      // Date.prototype.addMinutes = (m) => {
+      //   this.setMinutes(this.getMinutes() + m);
+      //   return this;
+      // };
+
+      // exp = exp.addMinutes(minutes);
+      exp = exp.setMinutes(exp.getMinutes() + minutes);
+      let choices = [];
+      Object.keys(postData.poll.choices).map((choice) => {
+        let object = { [choice]: postData.poll.choices[choice], votes: [] };
+        choices.push(object);
+      });
+
+      postData.poll.choices = choices;
+      postData.poll.exp = exp;
+
+      const data = await Post.create({
+        ...postData,
+        owner: name,
+        username: user,
+        creator: name,
+      });
+      console.log(data);
+      return res.status(200).json(data);
+    } else {
+      delete postData.poll;
+
+      const data = await Post.create({
+        ...postData,
+        owner: name,
+        username: user,
+        creator: name,
+      });
+
+      if (tags?.length) {
+        tags.map(async (tag) => {
+          let createdTag = await hashtag.findOne({ name: tag });
+
+          if (!createdTag) {
+            createdTag = await hashtag.create({
+              name: tag,
+            });
+          }
+
+          createdTag.posts.push(data._id);
+          await createdTag.save();
+        });
+        data.tags = tags;
+        await data.save();
+      }
+      return res.status(200).json(data);
     }
-    const data = await Post.create({
-      ...postData,
-      owner: name,
-      username: user,
-      creator: name,
-    });
-    return res.status(200).json(data);
   } catch (error) {
     console.log(error);
   }
@@ -90,6 +175,7 @@ const retweetPost = async (req, res) => {
       const data = await Post.create(postData);
       return res.status(200).json(data);
     }
+    returnres.sendStatus(201);
     return res.sendStatus(200);
   } catch (error) {
     console.log(error);
@@ -99,7 +185,7 @@ const retweetPost = async (req, res) => {
 const deletePost = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id);
+
     if (!mongoose.isValidObjectId(id)) return res.sendStatus(204);
     await Post.findOneAndDelete({ _id: id });
     return res.status(200).json(id);
@@ -120,9 +206,12 @@ const handleLikes = async (req, res) => {
   try {
     const reqPost = await Post.findById(postId);
     const hasLiked =
-      reqPost.likes.findIndex((id) => id === String(userId)) !== -1;
+      reqPost.likes.findIndex((id) => String(id) === String(userId)) !== -1;
+
     if (hasLiked) {
-      reqPost.likes = reqPost.likes.filter((id) => id !== userId);
+      reqPost.likes = reqPost.likes.filter(
+        (id) => String(id) !== String(userId)
+      );
     } else {
       reqPost.likes.push(userId);
     }
@@ -175,6 +264,41 @@ const handleComments = async (req, res) => {
     }
   }
 };
+
+const handlePolls = async (req, res) => {
+  const userId = req._id;
+  const { userChoice } = req.body;
+  const postId = req.params.id;
+
+  if (!postId) {
+    return res.sendStatus(400);
+  }
+
+  const poll = await Post.findById(postId);
+  
+  if (!poll) return res.sendStatus(404);
+  Array.from(poll.poll.choices).map((choice, i) => {
+    if (choice?.votes?.includes(userId) && choice[userChoice] ===undefined) {
+      choice.votes = choice.votes.filter((vote) => {
+        return String(vote) !== String(userId)
+      })
+    } else if (
+      !choice?.votes?.includes(userId) &&
+      choice[userChoice] !== undefined
+    ) {
+      choice.votes.push(userId);
+    }
+    return null;
+  });
+
+  // console.log(poll.poll.choices, "before");
+
+  await poll.markModified("poll.choices");
+  const final = await poll.save();
+ 
+ 
+  return res.status(200).json(final);
+};
 module.exports = {
   fetchPosts,
   createPost,
@@ -183,4 +307,5 @@ module.exports = {
   fetchMorePosts,
   handleLikes,
   handleComments,
+  handlePolls,
 };

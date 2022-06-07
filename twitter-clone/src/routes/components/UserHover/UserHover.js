@@ -10,7 +10,7 @@ const UserHover = ({ username, show }) => {
     const getProfile = async () => {
       if (show) {
         const data = await fetchProfile(username);
-        console.log(data);
+
         setProfile(data);
       }
     };
@@ -35,9 +35,7 @@ const UserHover = ({ username, show }) => {
         </div>
         <button>Follow</button>
       </div>
-      <p className="desc">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptate, non.
-      </p>
+      <p className="desc">{profile.bio}</p>
       <div className="users">
         <p>
           {profile?.following?.length} <span> Following</span>
@@ -63,7 +61,7 @@ const Wrap = styled.div`
   position: absolute;
   bottom: -150px;
   z-index: 100;
-  right: -100%;
+  right: -100px;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 3px 0px,
     rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
   .Top {

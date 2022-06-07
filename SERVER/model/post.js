@@ -5,6 +5,17 @@ const postSchema = new Schema(
     creator: {
       type: String,
     },
+    isPoll: {
+      type: Boolean,
+      default: false,
+    },
+    poll: {
+      type: {
+        question: String,
+        choices: [Schema.Types.Mixed],
+        exp: Date,
+      },
+    },
     username: {
       type: String,
       required: true,

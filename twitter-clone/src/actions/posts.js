@@ -12,11 +12,18 @@ export const fetchPosts =
       payload: data,
     });
   };
+//setHasMore, setLoading, page,user,parameters
+//setHasMore, setLoading, page
 
+export const handlePolls = (userChoice, postId) => async (dispatch) => {
+  const data = await api.handlePolls(userChoice, postId);
+  dispatch({type:constants.HANDLEPOLLS, payload:data});
+};
 export const fetchMorePosts =
-  (setHasMore, setLoadng, page = 0, limit = 3) =>
+  (setHasMore, setLoadng, page = 0, user = null, parameters = "",limit = 3) =>
   async (dispatch) => {
-    const params = `page=${page}&limit=${limit}`;
+    const params = `page=${page}&limit=${limit}&user=${user}&search=${parameters.replace("#", "%23")}`;
+    console.log(params);
     setLoadng(true);
     const data = await api.fetchMorePosts(params);
     setHasMore(data.hasMore);
@@ -64,4 +71,8 @@ export const createPost = (userId, postData) => async (dispatch) => {
     type: constants.CREATEPOST,
     payload: data,
   });
+};
+
+export const clearPosts = () => async (dispatch) => {
+  dispatch({ type: constants.CLEARPOSTS });
 };

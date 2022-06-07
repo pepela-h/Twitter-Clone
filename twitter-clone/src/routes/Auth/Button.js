@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
-const Button = ({ color, background, children }) => {
+const Button = ({ color, background, children, clickEvent }) => {
   return (
-    <Btn color={color} background={background}>
+    <Btn color={color} background={background} onClick={clickEvent || undefined} >
       {children}
     </Btn>
   );
@@ -14,9 +14,9 @@ const Btn = styled.button`
   /* padding: 5px; */
   overflow: hidden;
   width: 100%;
-  height: 45px;
+  height: 50px;
   border-radius: 100px;
-  margin: 5px 0;
+  margin: 8px 0;
   border: 1px solid;
   border-color: var(--borderLight);
   > div {

@@ -15,9 +15,14 @@ const refreshTokenController = async (req, res) => {
   try {
     const duplicate = await User.findOne({ _id: newId });
     if (!duplicate) return res.sendStatus(400);
+    // console.log(duplicate.refreshToken.length, "top");
     const tokenMatch = duplicate?.refreshToken.includes(refreshToken);
     // console.log(duplicate.refreshToken, refreshToken);
-    if (!tokenMatch) return res.sendStatus(401);
+    if (!tokenMatch) {
+      console.log("Tokens Do not match");
+      return res.sendStatus(401);
+    }
+    // console.log("mathed");
     jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN,
@@ -37,7 +42,7 @@ const refreshTokenController = async (req, res) => {
           { expiresIn: "5m" }
         );
 
-        const refreshToken = jwt.sign(
+        const refreshTken = jwt.sign(
           {
             _id: decoded._id,
             username: decoded.username,
@@ -46,17 +51,21 @@ const refreshTokenController = async (req, res) => {
           process.env.REFRESH_TOKEN,
           { expiresIn: "10d" }
         );
-        setTimeout(() => {
-          duplicate.refreshToken = duplicate.refreshToken.filter(
-            (token) => String(token) !== String(ltR)
-          );
+
+        await duplicate.refreshToken.filter(
+          (token) => String(token) !== String(ltR)
+        );
+
+        const tokens = duplicate.refreshToken.map((token) => {
+          return String(token) === String(ltR) ? refreshTken : token;
         });
-        // console.log(refreshToken, duplicate.refreshToken);
 
-        duplicate.refreshToken.push(refreshToken);
+        // console.log(duplicate.refreshToken.length);
 
+        // duplicate.refreshToken.push(refreshTken);
+        // duplicate.refreshToken = tokens;
         // console.log(duplicate.refreshToken);
-        await duplicate.save();
+        await User.findByIdAndUpdate(duplicate._id, { refreshToken: tokens });
 
         res.cookie("access", accessToken, {
           sameSite: "None",
@@ -65,7 +74,7 @@ const refreshTokenController = async (req, res) => {
           path: "/",
           maxAge: 1000 * 60 * 60 * 24 * 10,
         });
-        res.cookie("jwt", refreshToken, {
+        res.cookie("jwt", refreshTken, {
           maxAge: 10 * 24 * 60 * 60 * 1000,
           sameSite: "None",
           httpOnly: true,
@@ -74,11 +83,13 @@ const refreshTokenController = async (req, res) => {
         });
         //   accessToken: duplicate.accessToken
         return res.status(200).json({
-          email: duplicate.email,
-          _id: duplicate._id,
-          avatar: duplicate.avatar,
-          username: duplicate.username,
-          name: duplicate.name,
+          // email: duplicate.email,
+          // _id: duplicate._id,
+          // avatar: duplicate.avatar,
+          // username: duplicate.username,
+          // name: duplicate.name,
+          refreshToken,
+          accessToken,
         });
       }
     );

@@ -92,9 +92,11 @@ const Row = styled.div`
       max-height: 400px;
       img {
         display: grid;
-        object-fit: contain;
+        object-fit: cover;
         object-position: center;
         width: 100%;
+        border-radius: 50%;
+        height: 100%;
       }
     }
     .avatar {

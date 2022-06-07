@@ -1,45 +1,67 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router";
+import Box from "@mui/material/Box";
+import Popper from "@mui/material/Popper";
+import Fade from "@mui/material/Fade";
+
 const Leftbar = () => {
-  const [selected, setSelected] = useState(0);
+  const location = useLocation();
+
+  const navigate = useNavigate();
+const user = useSelector((state) => state.user);
+
+  
+
+
+  const [open, setOpen] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget );
+    setOpen((previousOpen) => !previousOpen);
+  };
+
+  const canBeOpen = open && Boolean(anchorEl);
+  const id = canBeOpen ? "transition-popper" : undefined;
   const tabs = [
     {
       icon: "fal fa-home-alt",
       text: "Home",
+      path: "/",
     },
     {
       icon: "fal fa-search",
       text: "Explore",
+      path: "/explore",
+    },
+    {
+      icon: "fal fa-bell",
+      text: "Notifications",
+      path: "/notifications",
     },
     {
       icon: "fal fa-inbox",
       text: "Messages",
+      path: "/direct-message",
     },
     {
       icon: "fal fa-bookmark",
       text: "Saved",
+      path: "/saved",
     },
     {
       icon: "fal fa-list-alt",
       text: "Lists",
+      path: "/lists",
     },
     {
       icon: "fal fa-user-alt",
       text: "Profile",
-    },
-    {
-      icon: "fal fa-ellipsis-h",
-      text: "More Options",
+      path: `/${user.username}`,
     },
   ];
-
-  const handleTabs = (i) => {
-    setSelected(i);
-  };
-
-  const user = useSelector((state) => state.user);
 
   useEffect(() => {}, []);
   return (
@@ -50,14 +72,24 @@ const Leftbar = () => {
         </Link>
       </div>
       {tabs.map((tab, i) => {
-        const color = selected === i ? "var(--primaryColor)" : "inherit";
+        const color =
+          location.pathname === tab.path ? "var(--primaryColor)" : "inherit";
         return (
-          <Row key={i} color={color} onClick={() => handleTabs(i)}>
-            <i className={`icon fal ${tab.icon}`}></i>
-            <h5>{tab.text}</h5>
+          <Row key={i} color={color}>
+            <Link
+              to={tab.text === "Profile" && !user.username ? "/" : tab.path}
+            >
+              <i className={`icon fal ${tab.icon}`}></i>
+              <h5>{tab.text}</h5>
+            </Link>
           </Row>
         );
       })}
+
+      <Row>
+        <i className={`icon fal fa-ellipsis-h`}></i>
+        <h5>{"More Options"}</h5>
+      </Row>
 
       <button>Tweet</button>
 
@@ -70,9 +102,60 @@ const Leftbar = () => {
               <i className="fa fa-user"></i>
             )}
           </div>
-          <div>
+          <div className="userCred">
             <h5>{user.name}</h5>
             <p>@{user.username}</p>
+          </div>
+
+          <div className="alrght">
+            <i
+              className="fa fa-ellipsis-h"
+              aria-describedby={id}
+              type="button"
+              onClick={handleClick}
+            ></i>
+            <Popper
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              placement={"top-end"}
+              transition
+            >
+              {({ TransitionProps }) => (
+                <Fade {...TransitionProps} timeout={350}>
+                  <Box sx={{ border: 1, p: 1, bgcolor: "background.paper" }}>
+                    <div className="mContainer">
+                      <div className="btm">
+                        <div className="avtr">
+                          {user.avatar ? (
+                            <img src={user.avatar} alt="" />
+                          ) : (
+                            <i className="fa fa-user"></i>
+                          )}
+                        </div>
+                        <div>
+                          <h6>Pepela John</h6>
+                          <p>@pepelajohn</p>
+                        </div>
+                        <div className="alrght">
+                          <i className="fa fa-check colorP"></i>
+                        </div>
+                      </div>
+                      <div className="btm">
+                        <h4>Add an existing account</h4>
+                      </div>
+
+                      <div className="btm">
+                        <h4
+                        style={{cursor:"pointer"}}
+                          onClick={()=>{navigate("/logout")}}
+                        >{`Logout @${user.username}`}</h4>
+                      </div>
+                    </div>
+                  </Box>
+                </Fade>
+              )}
+            </Popper>
           </div>
         </div>
       ) : (
@@ -105,12 +188,34 @@ const Wrap = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  .bottom {
+  @media screen and (max-width: 1200px) {
+    justify-content: center !important;
+    /* width:fit-content; */
+  }
+
+  .top{
+    display:flex !important;
+  }
+
+  .userCred {
+    @media screen and (max-width: 1200px) {
+      display: none;
+    }
+  }
+  .bottom,.btm {
     margin-top: auto;
     margin-bottom: 15px;
     width: 80%;
-    display: flex;
+    display: flex !important;
     align-items: center;
+    .alrght {
+      margin-left: auto;
+    }
+    @media screen and (max-width: 1200px) {
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+    }
     a {
       color: var(--primaryColor);
     }
@@ -148,6 +253,13 @@ const Wrap = styled.div`
     padding: 15px 0;
     width: 150px;
 
+    @media screen and (max-width: 1200px) {
+      text-align: center;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
     i {
       margin-right: auto !important;
       color: var(--primaryColor);
@@ -162,6 +274,12 @@ const Wrap = styled.div`
     background-color: var(--primaryColor);
     margin-top: 50px;
     cursor: pointer;
+
+    @media screen and (max-width: 1200px) {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+    }
   }
 `;
 
@@ -174,7 +292,22 @@ const Row = styled.div`
   padding: 15px 0;
   width: 150px;
   flex-shrink: 0;
-  color: ${(props) => props.color}; /* margin-left: auto; */
+  color: ${(props) => props.color};
+
+  @media screen and (max-width: 1200px) {
+    justify-content: center;
+    width: 100%;
+    h5 {
+      display: none !important;
+    }
+  }
+  a {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+  }
+
+  /* margin-left: auto; */
   h5 {
     min-width: 120px;
     margin-right: 20px;
@@ -195,5 +328,9 @@ const Row = styled.div`
     justify-content: center;
     margin-right: 30px;
     font-size: var(--textFont-xlg);
+
+    @media screen and (max-width: 1200px) {
+      margin-right: 0;
+    }
   }
 `;

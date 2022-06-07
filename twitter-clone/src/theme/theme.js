@@ -8,5 +8,12 @@ export const theme = createTheme({
     lightMode: {
       background: "white",
     },
+    breakpoints: {
+      xs: 0,
+      sm: 600,
+      medium: 1000,
+      lg: 1200,
+      xl: 1536,
+    },
   },
 });

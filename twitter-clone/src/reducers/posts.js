@@ -6,6 +6,7 @@ export const postReducer = (state = [], action) => {
       return action.payload === undefined || !action.payload
         ? state
         : [...state, ...action.payload];
+    case constants.HANDLEPOLLS:
     case constants.COMMENTPOST:
     case constants.LIKEPOST:
       let newState = state.map((post) =>
@@ -21,6 +22,8 @@ export const postReducer = (state = [], action) => {
       return action.payload === undefined || !action.payload
         ? state
         : [action.payload, ...state];
+    case constants.CLEARPOSTS:
+      return [];
     case constants.DELETEPOST:
       return !action.payload
         ? state

@@ -30,10 +30,14 @@ const userSchema = new Schema(
       unique: true,
       required: true,
     },
+    notifications: {
+      type: [{ nType: String, nDate: { type: Date } }],
+      default: [],
+    },
   },
   {
     timestamps: true,
   }
 );
-
+userSchema.index({ username: "text", name: "text" });
 module.exports = mongoose.model("User", userSchema);
